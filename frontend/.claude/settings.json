@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Edit(schema.dbml)",
+      "Bash(npx @dbml/cli dbml2sql:*)",
+      "Bash(npm run dbml:validate:*)",
+      "Bash(npm run migration:generate:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run lint:*)"
+    ],
+    "ask": [
+      "Bash(npm run db:create:*)",
+      "Bash(npm run migration:run:*)",
+      "Bash(npm run migration:revert:*)",
+      "Bash(npm run seed:*)",
+      "Bash(npm run typeorm:*)",
+      "Bash(mysql:*)",
+      "Bash(mysqladmin:*)"
+    ],
+    "deny": [
+      "Read(./backend/.env)",
+      "Read(./frontend/.env*)"
+    ]
+  }
+}

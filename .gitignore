@@ -1,0 +1,29 @@
+# Dependencias
+node_modules/
+
+# Builds
+dist/
+.next/
+out/
+build/
+
+# Variables de entorno (sí se suben los .env.example)
+.env
+.env.*
+!.env.example
+
+# Claude Code: settings personales
+.claude/settings.local.json
+
+# Referencia generada desde schema.dbml
+backend/src/database/schema.reference.sql
+
+# Logs y sistema
+*.log
+npm-debug.log*
+.DS_Store
+coverage/
+
+# Editores
+.vscode/
+.idea/
