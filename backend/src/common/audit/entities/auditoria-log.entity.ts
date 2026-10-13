@@ -24,7 +24,7 @@ export class AuditoriaLog {
   @Column({ length: 100 })
   tablaAfectada: string;
 
-  @Column({ length: 50, nullable: true })
+  @Column({ type: 'varchar', length: 50, nullable: true })
   registroId: string | null;
 
   @Column({ type: 'json', nullable: true })
@@ -33,7 +33,7 @@ export class AuditoriaLog {
   @Column({ type: 'json', nullable: true })
   datosNuevos: Record<string, unknown> | null;
 
-  @Column({ length: 45, nullable: true })
+  @Column({ type: 'varchar', length: 45, nullable: true })
   ip: string | null;
 
   @CreateDateColumn({ name: 'creado_en' })
