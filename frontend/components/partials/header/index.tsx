@@ -2,9 +2,7 @@ import React from 'react'
 import HeaderContent from './header-content'
 import HeaderSearch from './header-search'
 import ProfileInfo from './profile-info'
-import Notifications from './notifications'
-import Messages from "./messages"
-import { Cart } from './cart'
+import AlertasCampana from '@/components/clinica/alertas-campana'
 import ThemeSwitcher from './theme-switcher'
 import { SidebarToggle } from '@/components/partials/sidebar/sidebar-toggle'
 import { SheetMenu } from '@/components/partials/sidebar/menu/sheet-menu'
@@ -27,9 +25,7 @@ const DashCodeHeader = async () => {
                 <div className="nav-tools flex items-center  md:gap-4 gap-3">
                     <LocalSwitcher />
                     <ThemeSwitcher />
-                    <Cart />
-                    <Messages />
-                    <Notifications />
+                    <AlertasCampana />
                     <ProfileInfo />
                     <SheetMenu />
                 </div>

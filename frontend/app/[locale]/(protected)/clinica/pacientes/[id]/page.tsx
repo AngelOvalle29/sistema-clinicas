@@ -14,7 +14,7 @@ import { Paciente } from "@/types/pacientes";
 
 export default function PacienteDetallePage() {
   const params = useParams<{ id: string }>();
-  const pacienteId = Number(params.id);
+  const pacienteId = Number(params?.id);
   const [paciente, setPaciente] = useState<Paciente | null>(null);
 
   const cargar = useCallback(() => {

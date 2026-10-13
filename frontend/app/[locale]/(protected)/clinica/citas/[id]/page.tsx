@@ -22,7 +22,7 @@ import { Cita } from "@/types/citas";
 
 export default function CitaDetallePage() {
   const params = useParams<{ id: string }>();
-  const citaId = Number(params.id);
+  const citaId = Number(params?.id);
   const { data: session } = useSession();
   const [cita, setCita] = useState<Cita | null>(null);
 

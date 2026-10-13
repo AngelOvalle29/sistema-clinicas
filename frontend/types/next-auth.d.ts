@@ -1,3 +1,4 @@
+import { DefaultSession } from "next-auth";
 import { RolCodigo } from "./common";
 
 declare module "next-auth" {
@@ -6,9 +7,7 @@ declare module "next-auth" {
       id: string;
       accessToken: string;
       rol: RolCodigo;
-      name?: string | null;
-      email?: string | null;
-    };
+    } & DefaultSession["user"];
   }
 }
 

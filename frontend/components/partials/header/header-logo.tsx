@@ -12,7 +12,7 @@ const HeaderLogo = () => {
 
     return (
         config.layout === 'horizontal' ? (
-            <Link href="/dashboard/analytics" className="flex gap-2 items-center    ">
+            <Link href="/clinica/dashboard" className="flex gap-2 items-center    ">
                 <DashCodeLogo className="  text-default-900 h-8 w-8 [&>path:nth-child(3)]:text-background [&>path:nth-child(2)]:text-background" />
                 <h1 className="text-xl font-semibold text-default-900 lg:block hidden ">
                     DashCode
@@ -20,7 +20,7 @@ const HeaderLogo = () => {
             </Link>
         ) :
             !isDesktop && (
-                <Link href="/dashboard/analytics" className="flex gap-2 items-center    ">
+                <Link href="/clinica/dashboard" className="flex gap-2 items-center    ">
                     <DashCodeLogo className="  text-default-900 h-8 w-8 [&>path:nth-child(3)]:text-background [&>path:nth-child(2)]:text-background" />
                     <h1 className="text-xl font-semibold text-default-900 lg:block hidden ">
                         DashCode

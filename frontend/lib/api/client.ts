@@ -13,13 +13,13 @@ export class ApiError extends Error {
 interface RequestOptions {
   method?: "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
   body?: unknown;
-  query?: Record<string, unknown>;
+  query?: object;
 }
 
 function buildUrl(path: string, query?: RequestOptions["query"]) {
   const url = new URL(`${API_URL}${path}`);
   if (query) {
-    Object.entries(query).forEach(([key, value]) => {
+    Object.entries(query as Record<string, unknown>).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== "") {
         url.searchParams.set(key, String(value));
       }

@@ -21,7 +21,7 @@ import { Receta } from "@/types/recetas";
 
 export default function RecetaDetallePage() {
   const params = useParams<{ id: string }>();
-  const recetaId = Number(params.id);
+  const recetaId = Number(params?.id);
   const { data: session } = useSession();
   const [receta, setReceta] = useState<Receta | null>(null);
 

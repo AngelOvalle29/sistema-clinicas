@@ -2,7 +2,7 @@
 
 Estado actual del proyecto. Claude Code lo lee al iniciar cada sesión y lo actualiza al terminar cada módulo o sesión de trabajo. Mantenerlo corto: esto es un resumen, no un log.
 
-Última actualización: 12 de octubre de 2026
+Última actualización: 13 de octubre de 2026
 
 ## Hecho
 
@@ -40,8 +40,10 @@ Estado actual del proyecto. Claude Code lo lee al iniciar cada sesión y lo actu
 ## Pendiente (siguiente paso)
 
 - **Backend de los 7 puntos de alcance mínimo: completo.** Falta solo soporte (ya está: `auth/usuarios/especialidades/medicos`) — no queda ningún módulo backend pendiente del listado de la sección 12.
-- Revertir `backend/.env.example` a placeholders (`DB_PASSWORD=`, `JWT_SECRET=cambia-esto`) antes de comitear — el usuario pidió dejarlo así por ahora (12 oct), pero sigue siendo un riesgo si se hace push.
-- **Frontend: sin empezar (0%).** Es el bloque de trabajo más grande que queda antes del 14 oct.
+- `backend/.env.example` ya está en placeholders (13 oct), pero las credenciales reales siguen en el historial de git (commits `4deb412`/`640b72b`, ya pusheados a `origin/main`, repo privado). Recomendado: cambiar la contraseña de MariaDB y el `JWT_SECRET` del `.env` real.
+- Frontend (13 oct, sesión VSCode): footer móvil y header de la plantilla reemplazados por accesos de la clínica (Citas, Dashboard, Alertas con contador real vía `useAlertasPendientes`); logo/breadcrumb ya no apuntan a `/dashboard/analytics`. Falta recorrer los flujos manualmente.
+- **Frontend: nota de la sesión del 13 oct — `ESTADO.md` decía "0%" pero en realidad la sesión del 12 oct ya había dejado commiteado (`640b72b`) el cliente API completo (`lib/api/*` + `types/*` para los 10 módulos), NextAuth con JWT del backend, login funcional, y las 8 pantallas de la sección 7 de `AGENTS.md` (dashboard, pacientes con historial/prioridades/defunción, citas con agenda/creación/consulta/cancelación, recetas con emisión/dispensación, farmacia con productos/lotes/movimientos, alertas). Esta sesión solo corrigió 2 bugs de tipos preexistentes (ver "Notas") y verificó que todo compila, lintea y los servidores bootean — no se agregó pantalla nueva.
+- **Pendiente real de frontend**: probar manualmente cada flujo en navegador (no se pudo probar visualmente en esta sesión, ver "Notas"); pantallas de administración para `usuarios`/`medicos`/`especialidades` (catálogos de soporte) no están en el frontend — no son parte de las "pantallas mínimas" de AGENTS.md sección 7, así que son opcionales, pero sin ellas un ADMIN no puede crear médicos/especialidades desde la UI (solo por Swagger).
 - No hay datos de demostración (seed solo cubre catálogos + admin, no pacientes/citas/recetas de ejemplo) — considerar un seed de demo si se quiere mostrar algo poblado.
 - README del proyecto: no escrito.
 
@@ -66,7 +68,16 @@ Estado actual del proyecto. Claude Code lo lee al iniciar cada sesión y lo actu
 
 | Pantalla | Estado |
 |----------|--------|
-| Todas | Pendiente |
+| Login | Hecho (NextAuth credentials → `POST /auth/login`, JWT guardado en sesión, redirige a `/clinica/dashboard`) |
+| Dashboard | Hecho (citas de hoy, alertas pendientes, stock bajo) |
+| Pacientes (lista + detalle + historial + prioridades + defunción) | Hecho |
+| Citas (agenda + creación + cancelación + consulta médica) | Hecho |
+| Recetas (emitir + dispensar + anular) | Hecho |
+| Farmacia (productos + lotes + movimientos) | Hecho |
+| Alertas | Hecho |
+| Admin de usuarios/médicos/especialidades | No existe en frontend (solo Swagger) — opcional según AGENTS.md §7 |
+
+Cliente API (`frontend/lib/api/*.ts` + `frontend/types/*.ts`): cubre los 10 módulos del backend. Único cliente HTTP en `lib/api/client.ts`.
 
 ## Base de datos
 
@@ -96,4 +107,12 @@ Estado actual del proyecto. Claude Code lo lee al iniciar cada sesión y lo actu
 ## Notas / bloqueos
 
 - `schema.dbml` nunca había existido realmente en el repo (ni en el working tree ni en el historial de git), aunque el commit inicial y este archivo decían lo contrario. Se diseñó desde cero en esta sesión; si en algún momento aparece una versión distinta guardada en otro lado (dbdiagram.io, otra máquina), compararla antes de seguir.
-- `backend/.env.example` (trackeado en git) tiene credenciales reales en vez de placeholders — ver nota en "Hecho". Revertir antes de comitear.
+- Roles: ADMIN no puede crear consultas/recetas (solo `MEDICO`) ni dispensar (solo `FARMACIA`). Para probar hay que crear esos usuarios + médico + especialidad + enfermedades crónicas por Swagger (no hay pantallas de admin ni seed de demo).
+- **Sesión 13 oct — 2 bugs de TypeScript preexistentes en el frontend (del commit `640b72b`), corregidos sin cambiar lógica**:
+  - `lib/api/client.ts`: `RequestOptions.query` estaba tipado `Record<string, unknown>`; TS rechaza pasar una interfaz nombrada con propiedades opcionales (p. ej. `QueryPacienteParams`) a ese tipo porque no tiene firma de índice explícita ("index signature is missing"). Rompía `tsc --noEmit` en los 9 `lib/api/*.ts` que mandan filtros de query. Se cambió el tipo a `query?: object` y se castea a `Record<string, unknown>` solo dentro de `buildUrl`.
+  - `types/next-auth.d.ts`: la augmentación de `Session.user` reemplazaba el tipo completo y perdía el campo `image` que ya usan componentes del template (`profile-info.tsx`, `team-switcher.tsx`, `footer/index.tsx`). Se cambió a intersectar con `DefaultSession["user"]` en vez de redeclarar `name`/`email` a mano.
+  - Con esto, `npx tsc --noEmit` en `frontend/` queda limpio para todo el código de clínica; los ~35 errores que quedan son preexistentes del template (imágenes demo faltantes en `public/images/...`, chart.js, chat/ecommerce demo) y no se tocaron.
+  - `npm run build` del frontend sigue fallando por un bug del template no relacionado: `@emoji-mart/react` (usado en la demo de chat) requiere el paquete `emoji-mart`, que nunca se instaló (no está en `package.json` ni resuelto en `package-lock.json`). No se instaló nada nuevo sin preguntar (regla de AGENTS.md) — si se quiere un `build` de producción limpio, hay que decidir si se instala `emoji-mart` o se quita la demo de chat.
+  - Lint dirigido a todos los archivos de `clinica/`, `lib/api/`, `lib/clinica/`, `types/*`, `lib/auth.ts` y `components/clinica/*`: limpio, sin errores ni warnings.
+  - Backend y frontend se dejaron corriendo (`npm run start:dev` en `backend/`, `npm run dev` en `frontend/`) para que el usuario pruebe en el navegador. Login verificado por API (`POST /auth/login` con el admin del seed devuelve JWT correcto).
+  - **No se pudo verificar visualmente en navegador** (el usuario declinó instalar la extensión Claude in Chrome en esta sesión): no se confirmó con certeza el guard de `app/[locale]/(protected)/layout.tsx` (`auth()` + `redirect("/")`) contra una sesión real, ni el render final de cada pantalla con datos. Falta que el usuario lo recorra a mano.
