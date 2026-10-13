@@ -247,11 +247,13 @@ Catálogos simples (especialidades, categorías) pueden desactivarse con `activo
 
 ### 5.1 Auth / Usuarios
 
-- Roles: `ADMIN`, `MEDICO`, `RECEPCION`, `FARMACIA`.
+- Roles: `ADMIN`, `MEDICO`, `RECEPCION`, `FARMACIA`. Catálogo `roles` (tabla), no enum — ver sección 6.1. El código los referencia como literales vía `RolCodigo` (`common/enums/rol-codigo.enum.ts`), que debe coincidir con los `codigo` seedeados en `roles`.
 - Login con email + contraseña → JWT. Contraseñas con `bcrypt`.
+- El JWT vence a los **30 minutos** (`JWT_EXPIRES_IN=30m`). No hay refresh token en el alcance mínimo: al vencer, el usuario vuelve a loguearse.
 - `JwtAuthGuard` global; endpoints públicos marcados con `@Public()`.
 - `@Roles(...)` + `RolesGuard` para restringir por rol.
 - Un seed crea el usuario ADMIN inicial desde variables de entorno.
+- Cada login (exitoso o fallido) se registra en `auditoria_logs` (`accion = LOGIN`) desde `AuthService`, ver sección 6.2.
 
 ### 5.2 Médicos y especialidades
 
@@ -363,6 +365,26 @@ Rangos de referencia iniciales (constantes en `alertas/constants/`, fáciles de 
 - Enums de TypeORM (`type: 'enum'`) usando los enums de TypeScript del módulo.
 - Relaciones: definir `@ManyToOne` con `@JoinColumn` y, cuando se necesite, la inversa `@OneToMany`. No usar `eager: true`; cargar relaciones explícitamente en el repositorio.
 
+### 6.1 Catálogos en vez de enums
+
+La mayoría de los "enums de negocio" son tablas catálogo (`roles`, `estados_cita`, `estados_paciente`, `estados_receta`, `tipos_producto`, `tipos_movimiento_inventario`, `tipos_alerta`, `severidades_alerta`, `estados_alerta`, `categorias_prioridad`), no `type: 'enum'` de TypeORM. Razón: un ADMIN debe poder agregar/editar valores sin que un dev toque código y despliegue.
+
+- Cada catálogo es `{ id, codigo, nombre, activo? }` (algunos agregan `nivel` o `es_final`). `codigo` es el valor estable que usa el código (p. ej. `'ADMIN'`, `'PROGRAMADA'`); `id` es el que usan las FK.
+- El código referencia estos catálogos con constantes TypeScript (`RolCodigo`, y análogos si se necesitan para otros catálogos) solo para tener autocompletado y evitar typos en `@Roles()` o en validaciones de transición de estado — esas constantes **no** son columnas enum de BD, son literales que deben existir seedeados en la tabla catálogo correspondiente.
+- Las transiciones de estado (p. ej. citas, sección 5.6) se siguen validando en el service comparando `codigo`, no en la BD.
+- **Único enum real que queda** (columna `type: 'enum'` de TypeORM): `auditoria_logs.accion` (`INSERT | UPDATE | DELETE | LOGIN`). No es un catálogo porque es un conjunto cerrado atado al ciclo de vida del subscriber de TypeORM y de `AuthService`; ningún ADMIN necesita agregar un quinto valor desde la UI.
+
+### 6.2 Auditoría centralizada
+
+Toda tabla de negocio (no los catálogos puros) lleva `created_by` y `updated_by` (FK nullable a `usuarios`), y toda mutación queda en `auditoria_logs` (usuario, acción, tabla afectada, id del registro, `datos_anteriores`/`datos_nuevos` en JSON, IP, fecha).
+
+- **Esto se implementa una sola vez, de forma centralizada, nunca repitiéndolo en cada service:**
+  - `AuditSubscriber` (`common/audit/audit.subscriber.ts`) es un `@EventSubscriber()` global de TypeORM: en `beforeInsert`/`beforeUpdate` llena `created_by`/`updated_by` leyendo el usuario actual de un `AsyncLocalStorage` (`common/context/request-context.ts`); en `afterInsert`/`afterUpdate`/`afterRemove` escribe la fila en `auditoria_logs` vía `AuditService`.
+  - `RequestContextInterceptor` (global, `common/interceptors/`) llena ese `AsyncLocalStorage` con el usuario del JWT y la IP al inicio de cada request.
+  - `AuditService` (`common/audit/audit.service.ts`) es el **único** punto que escribe en `auditoria_logs`. Lo llama el subscriber automáticamente, y además lo llama `AuthService` a mano para `accion = LOGIN` (un login no es una mutación de entidad, así que el subscriber no lo puede captar).
+  - **Ningún otro módulo de negocio debe llamar a `AuditService` ni leer/escribir `auditoria_logs` directamente.** Si una tabla nueva necesita auditoría, basta con que su entidad tenga las relaciones `created_by`/`updated_by` — el subscriber la detecta solo.
+  - `auditoria_logs` y los catálogos puros no llevan `created_by`/`updated_by` y están excluidos de la auditoría automática (el subscriber se ignora a sí mismo para no auditar la auditoría).
+
 Scripts esperados en `backend/package.json`:
 
 ```json
@@ -466,7 +488,7 @@ DB_USERNAME=root
 DB_PASSWORD=
 DB_DATABASE=clinica_db
 JWT_SECRET=cambia-esto
-JWT_EXPIRES_IN=8h
+JWT_EXPIRES_IN=30m
 CORS_ORIGIN=http://localhost:3000
 ADMIN_EMAIL=admin@clinica.local
 ADMIN_PASSWORD=Admin123!
