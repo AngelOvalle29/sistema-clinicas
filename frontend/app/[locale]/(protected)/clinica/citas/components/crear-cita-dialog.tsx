@@ -55,10 +55,28 @@ export function CrearCitaDialog({ onCreada }: { onCreada: () => void }) {
 
   useEffect(() => {
     if (open) {
-      listarPacientes({ limit: 100, estadoCodigo: "ACTIVO" }).then((r) => setPacientes(r.data));
-      listarMedicos({ limit: 100 }).then((r) => setMedicos(r.data));
+      listarPacientes({ limit: 100, estadoCodigo: "ACTIVO" })
+        .then((r) => setPacientes(r.data))
+        .catch(() => toast.error("No se pudieron cargar los pacientes"));
+      listarMedicos({ limit: 100 })
+        .then((r) => setMedicos(r.data))
+        .catch(() => toast.error("No se pudieron cargar los médicos"));
     }
   }, [open]);
+
+  const ahoraLocal = () => {
+    const d = new Date();
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().slice(0, 16);
+  };
+
+  const sumarMinutos = (valor: string, minutos: number) => {
+    const d = new Date(valor);
+    d.setMinutes(d.getMinutes() + minutos - d.getTimezoneOffset());
+    return d.toISOString().slice(0, 16);
+  };
+
+  const inicioRegistro = register("fechaHoraInicio");
 
   const onSubmit = async (data: FormValues) => {
     try {
@@ -90,7 +108,10 @@ export function CrearCitaDialog({ onCreada }: { onCreada: () => void }) {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-1.5">
             <Label>Paciente</Label>
-            <Select onValueChange={(value) => setValue("pacienteId", value)}>
+            <Select
+              value={watch("pacienteId") ?? ""}
+              onValueChange={(value) => setValue("pacienteId", value, { shouldValidate: true })}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Selecciona un paciente" />
               </SelectTrigger>
@@ -108,7 +129,11 @@ export function CrearCitaDialog({ onCreada }: { onCreada: () => void }) {
           </div>
           <div className="space-y-1.5">
             <Label>Médico</Label>
-            <Select onValueChange={(value) => setValue("medicoId", value)}>
+            <Select
+              value={watch("medicoId") ?? ""}
+              onValueChange={(value) => setValue("medicoId", value, { shouldValidate: true })}
+              disabled={medicos.length === 0}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Selecciona un médico" />
               </SelectTrigger>
@@ -121,6 +146,11 @@ export function CrearCitaDialog({ onCreada }: { onCreada: () => void }) {
                 ))}
               </SelectContent>
             </Select>
+            {medicos.length === 0 && (
+              <p className="text-xs text-warning">
+                No hay médicos registrados. Un ADMIN debe crearlos primero.
+              </p>
+            )}
             {errors.medicoId && (
               <p className="text-xs text-destructive">{errors.medicoId.message}</p>
             )}
@@ -128,14 +158,24 @@ export function CrearCitaDialog({ onCreada }: { onCreada: () => void }) {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label>Inicio</Label>
-              <Input type="datetime-local" {...register("fechaHoraInicio")} />
+              <Input
+                type="datetime-local"
+                min={ahoraLocal()}
+                {...inicioRegistro}
+                onChange={(e) => {
+                  inicioRegistro.onChange(e);
+                  if (e.target.value) {
+                    setValue("fechaHoraFin", sumarMinutos(e.target.value, 30), { shouldValidate: true });
+                  }
+                }}
+              />
               {errors.fechaHoraInicio && (
                 <p className="text-xs text-destructive">{errors.fechaHoraInicio.message}</p>
               )}
             </div>
             <div className="space-y-1.5">
               <Label>Fin</Label>
-              <Input type="datetime-local" {...register("fechaHoraFin")} />
+              <Input type="datetime-local" min={ahoraLocal()} {...register("fechaHoraFin")} />
               {errors.fechaHoraFin && (
                 <p className="text-xs text-destructive">{errors.fechaHoraFin.message}</p>
               )}
