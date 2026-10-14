@@ -2,7 +2,7 @@
 
 const Copyright = () => {
     const currentYear = new Date().getFullYear();
-  return <>Copyright {currentYear}, Dashcode All Rights Reserved.</>;
+  return <>&copy; {currentYear} XelaHealing. Todos los derechos reservados.</>;
 };
 
 export default Copyright;

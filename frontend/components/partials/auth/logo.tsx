@@ -1,24 +1,12 @@
-'use client'
-import Image from 'next/image';
-import { useTheme } from "next-themes";
+import DashCodeLogo from "@/components/dascode-logo";
 
 const Logo = () => {
-    const { theme: mode } = useTheme();
   return (
-    <div>
-      <Image
-        src={
-          mode === "light"
-            ? "/images/logo/logo.svg"
-            : "/images/logo/logo-white.svg"
-        }
-        alt=""
-        width={300}
-        height={300}
-        className=" w-36 "
-      />
+    <div className="flex items-center gap-2">
+      <DashCodeLogo className="h-10 w-10" />
+      <span className="text-2xl font-semibold text-default-900">XelaHealing</span>
     </div>
   );
-}
+};
 
 export default Logo;

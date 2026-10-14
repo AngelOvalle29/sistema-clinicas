@@ -15,8 +15,8 @@ import DirectionProvider from "@/providers/direction-provider";
 import AuthProvider from "@/providers/auth.provider";
 
 export const metadata: Metadata = {
-  title: "Dashcode admin Template",
-  description: "created by codeshaper",
+  title: "XelaHealing",
+  description: "Sistema de gestión clínica con farmacia integrada.",
 };
 
 export default async function RootLayout({

@@ -7,7 +7,6 @@ import ThemeSwitcher from './theme-switcher'
 import { SidebarToggle } from '@/components/partials/sidebar/sidebar-toggle'
 import { SheetMenu } from '@/components/partials/sidebar/menu/sheet-menu'
 import HorizontalMenu from "./horizontal-menu"
-import LocalSwitcher from './locale-switcher'
 import HeaderLogo from "./header-logo"
 
 
@@ -23,7 +22,6 @@ const DashCodeHeader = async () => {
                     <HeaderSearch />
                 </div>
                 <div className="nav-tools flex items-center  md:gap-4 gap-3">
-                    <LocalSwitcher />
                     <ThemeSwitcher />
                     <AlertasCampana />
                     <ProfileInfo />
