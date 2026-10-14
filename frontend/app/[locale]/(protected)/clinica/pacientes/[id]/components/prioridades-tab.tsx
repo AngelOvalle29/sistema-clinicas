@@ -36,12 +36,16 @@ export function PrioridadesTab({ pacienteId }: { pacienteId: number }) {
   const [guardando, setGuardando] = useState(false);
 
   const cargar = useCallback(() => {
-    listarPrioridadesActivas(pacienteId).then(setPrioridades);
+    listarPrioridadesActivas(pacienteId)
+      .then(setPrioridades)
+      .catch(() => toast.error("No se pudieron cargar las prioridades"));
   }, [pacienteId]);
 
   useEffect(() => {
     cargar();
-    listarCategoriasPrioridad().then(setCategorias);
+    listarCategoriasPrioridad()
+      .then(setCategorias)
+      .catch(() => toast.error("No se pudieron cargar las categorías de prioridad"));
   }, [cargar]);
 
   const handleAsignar = async () => {

@@ -17,7 +17,11 @@ export function HistorialTab({ pacienteId }: { pacienteId: number }) {
   const [nuevoAntecedenteDescripcion, setNuevoAntecedenteDescripcion] = useState("");
 
   const cargar = useCallback(() => {
-    obtenerHistorialCompleto(pacienteId).then(setHistorial);
+    obtenerHistorialCompleto(pacienteId)
+      .then(setHistorial)
+      .catch((error) =>
+        toast.error(error instanceof ApiError ? error.message : "No se pudo cargar el historial"),
+      );
   }, [pacienteId]);
 
   useEffect(() => {

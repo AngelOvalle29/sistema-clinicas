@@ -10,20 +10,32 @@ import { DefuncionDialog } from "./components/defuncion-dialog";
 import { HistorialTab } from "./components/historial-tab";
 import { PrioridadesTab } from "./components/prioridades-tab";
 import { obtenerPaciente } from "@/lib/api/pacientes";
+import { ApiError } from "@/lib/api/client";
 import { Paciente } from "@/types/pacientes";
 
 export default function PacienteDetallePage() {
   const params = useParams<{ id: string }>();
   const pacienteId = Number(params?.id);
   const [paciente, setPaciente] = useState<Paciente | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const cargar = useCallback(() => {
-    obtenerPaciente(pacienteId).then(setPaciente);
+    if (!pacienteId) return;
+    obtenerPaciente(pacienteId)
+      .then((p) => {
+        setPaciente(p);
+        setError(null);
+      })
+      .catch((e) => setError(e instanceof ApiError ? e.message : "No se pudo cargar el paciente"));
   }, [pacienteId]);
 
   useEffect(() => {
     cargar();
   }, [cargar]);
+
+  if (error) {
+    return <div className="text-sm text-destructive">{error}</div>;
+  }
 
   if (!paciente) {
     return <div className="text-sm text-default-500">Cargando paciente...</div>;
