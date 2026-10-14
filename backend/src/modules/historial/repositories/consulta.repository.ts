@@ -13,14 +13,18 @@ export class ConsultaRepository {
   findById(id: number) {
     return this.repo.findOne({
       where: { id },
-      relations: { cita: true, paciente: true, medico: true },
+      relations: {
+        cita: true,
+        paciente: true,
+        medico: { usuario: true, especialidad: true },
+      },
     });
   }
 
   findByPacienteId(pacienteId: number) {
     return this.repo.find({
       where: { paciente: { id: pacienteId } },
-      relations: { medico: true },
+      relations: { medico: { usuario: true, especialidad: true } },
       order: { fecha: 'DESC' },
     });
   }

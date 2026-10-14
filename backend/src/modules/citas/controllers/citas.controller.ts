@@ -37,7 +37,9 @@ export class CitasController {
     return this.citasService.findAll(query.page ?? 1, query.limit ?? 20, {
       pacienteId: query.pacienteId,
       medicoId: query.medicoId,
-      fecha: query.fecha ? new Date(query.fecha) : undefined,
+      fecha: query.fecha
+        ? new Date(`${query.fecha.slice(0, 10)}T00:00:00`)
+        : undefined,
       estadoCodigo: query.estadoCodigo,
     });
   }

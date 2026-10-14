@@ -29,14 +29,24 @@ import { listarPacientes } from "@/lib/api/pacientes";
 import { ApiError } from "@/lib/api/client";
 import { Medico } from "@/types/medicos";
 import { Paciente } from "@/types/pacientes";
+import { fechaHoraLocal, sumarMinutos } from "@/lib/clinica/fechas";
 
-const schema = z.object({
-  pacienteId: z.string().min(1, "Selecciona un paciente"),
-  medicoId: z.string().min(1, "Selecciona un médico"),
-  fechaHoraInicio: z.string().min(1, "La hora de inicio es obligatoria"),
-  fechaHoraFin: z.string().min(1, "La hora de fin es obligatoria"),
-  esControlCronico: z.boolean().optional(),
-});
+const schema = z
+  .object({
+    pacienteId: z.string().min(1, "Selecciona un paciente"),
+    medicoId: z.string().min(1, "Selecciona un médico"),
+    fechaHoraInicio: z.string().min(1, "La hora de inicio es obligatoria"),
+    fechaHoraFin: z.string().min(1, "La hora de fin es obligatoria"),
+    esControlCronico: z.boolean().optional(),
+  })
+  .refine((v) => new Date(v.fechaHoraInicio) > new Date(), {
+    path: ["fechaHoraInicio"],
+    message: "El inicio debe ser una fecha y hora futura",
+  })
+  .refine((v) => new Date(v.fechaHoraFin) > new Date(v.fechaHoraInicio), {
+    path: ["fechaHoraFin"],
+    message: "El fin debe ser después del inicio",
+  });
 
 type FormValues = z.infer<typeof schema>;
 
@@ -63,18 +73,6 @@ export function CrearCitaDialog({ onCreada }: { onCreada: () => void }) {
         .catch(() => toast.error("No se pudieron cargar los médicos"));
     }
   }, [open]);
-
-  const ahoraLocal = () => {
-    const d = new Date();
-    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-    return d.toISOString().slice(0, 16);
-  };
-
-  const sumarMinutos = (valor: string, minutos: number) => {
-    const d = new Date(valor);
-    d.setMinutes(d.getMinutes() + minutos - d.getTimezoneOffset());
-    return d.toISOString().slice(0, 16);
-  };
 
   const inicioRegistro = register("fechaHoraInicio");
 
@@ -160,7 +158,7 @@ export function CrearCitaDialog({ onCreada }: { onCreada: () => void }) {
               <Label>Inicio</Label>
               <Input
                 type="datetime-local"
-                min={ahoraLocal()}
+                min={fechaHoraLocal()}
                 {...inicioRegistro}
                 onChange={(e) => {
                   inicioRegistro.onChange(e);
@@ -175,7 +173,7 @@ export function CrearCitaDialog({ onCreada }: { onCreada: () => void }) {
             </div>
             <div className="space-y-1.5">
               <Label>Fin</Label>
-              <Input type="datetime-local" min={ahoraLocal()} {...register("fechaHoraFin")} />
+              <Input type="datetime-local" min={fechaHoraLocal()} {...register("fechaHoraFin")} />
               {errors.fechaHoraFin && (
                 <p className="text-xs text-destructive">{errors.fechaHoraFin.message}</p>
               )}

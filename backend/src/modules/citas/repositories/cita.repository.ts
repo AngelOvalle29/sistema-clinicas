@@ -26,7 +26,11 @@ export class CitaRepository {
   findById(id: number) {
     return this.repo.findOne({
       where: { id },
-      relations: { paciente: true, medico: true, estado: true },
+      relations: {
+        paciente: true,
+        medico: { usuario: true, especialidad: true },
+        estado: true,
+      },
     });
   }
 
@@ -86,7 +90,11 @@ export class CitaRepository {
 
     return this.repo.findAndCount({
       where,
-      relations: { paciente: true, medico: true, estado: true },
+      relations: {
+        paciente: true,
+        medico: { usuario: true, especialidad: true },
+        estado: true,
+      },
       order: { nivelPrioridad: 'ASC', fechaHoraInicio: 'ASC' },
       skip,
       take,

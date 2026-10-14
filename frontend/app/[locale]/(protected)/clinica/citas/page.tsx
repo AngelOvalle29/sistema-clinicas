@@ -19,18 +19,16 @@ import { PaginationControls } from "@/components/clinica/pagination-controls";
 import { CrearCitaDialog } from "./components/crear-cita-dialog";
 import { listarCitas } from "@/lib/api/citas";
 import { Cita } from "@/types/citas";
+import { hoyLocal } from "@/lib/clinica/fechas";
 
 const LIMITE = 10;
 
-function hoyISO() {
-  return new Date().toISOString().slice(0, 10);
-}
 
 export default function CitasPage() {
   const [citas, setCitas] = useState<Cita[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const [fecha, setFecha] = useState(hoyISO());
+  const [fecha, setFecha] = useState(hoyLocal());
   const [cargando, setCargando] = useState(true);
 
   const cargar = useCallback(() => {

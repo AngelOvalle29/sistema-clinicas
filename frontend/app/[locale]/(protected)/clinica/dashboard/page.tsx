@@ -10,12 +10,10 @@ import { listarCitas } from "@/lib/api/citas";
 import { listarAlertas, contarAlertasPendientes } from "@/lib/api/alertas";
 import { listarProductosConStockBajo } from "@/lib/api/farmacia";
 import { Cita } from "@/types/citas";
+import { hoyLocal } from "@/lib/clinica/fechas";
 import { Alerta } from "@/types/alertas";
 import { ProductoConStock } from "@/types/farmacia";
 
-function hoyISO() {
-  return new Date().toISOString().slice(0, 10);
-}
 
 export default function DashboardPage() {
   const [citasHoy, setCitasHoy] = useState<Cita[]>([]);
@@ -26,7 +24,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     Promise.all([
-      listarCitas({ fecha: hoyISO(), limit: 50 }),
+      listarCitas({ fecha: hoyLocal(), limit: 50 }),
       listarAlertas({ estadoCodigo: "PENDIENTE", limit: 5 }),
       contarAlertasPendientes(),
       listarProductosConStockBajo(),

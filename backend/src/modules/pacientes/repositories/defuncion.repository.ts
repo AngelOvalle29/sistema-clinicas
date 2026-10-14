@@ -38,7 +38,7 @@ export class DefuncionRepository {
 
     return this.repo.findAndCount({
       where,
-      relations: { paciente: true, medicoCertifica: true },
+      relations: { paciente: true, medicoCertifica: { usuario: true } },
       order: { fecha: 'DESC' },
       skip,
       take,

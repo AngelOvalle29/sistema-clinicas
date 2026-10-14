@@ -21,7 +21,7 @@ export class RecetaRepository {
       where: { id },
       relations: {
         paciente: true,
-        medico: true,
+        medico: { usuario: true, especialidad: true },
         estado: true,
         detalles: { producto: true },
       },
@@ -52,7 +52,11 @@ export class RecetaRepository {
 
     return this.repo.findAndCount({
       where,
-      relations: { paciente: true, medico: true, estado: true },
+      relations: {
+        paciente: true,
+        medico: { usuario: true, especialidad: true },
+        estado: true,
+      },
       order: { fechaEmision: 'DESC' },
       skip,
       take,
