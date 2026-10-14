@@ -27,6 +27,7 @@ export default async function middleware(request: NextRequest) {
 }
  
 export const config = {
-  // Match only internationalized pathnames
-  matcher: ['/', '/(ar|en)/:path*']
+  // Todas las rutas menos API, internos de Next y archivos estáticos: así una URL
+  // sin locale (p. ej. /clinica/dashboard) redirige a /en/... en vez de dar 404.
+  matcher: ['/((?!api|_next|_vercel|.*\\..*).*)']
 };
